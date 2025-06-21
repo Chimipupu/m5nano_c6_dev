@@ -59,22 +59,12 @@ const char HTML_PAGE[] = R"rawliteral(
   </p>
 
   <h2>RGB Custom Color</h2>
-  <p>R: <input type="range" min="0" max="255" value="0" class="slider" id="rRange"></p>
-  <p>G: <input type="range" min="0" max="255" value="0" class="slider" id="gRange"></p>
-  <p>B: <input type="range" min="0" max="255" value="0" class="slider" id="bRange"></p>
-  <p><button class="button" onclick="sendRGB()">Set RGB</button></p>
-
-  <script>
-    function sendRGB() {
-      var r = document.getElementById("rRange").value;
-      var g = document.getElementById("gRange").value;
-      var b = document.getElementById("bRange").value;
-      var xhr = new XMLHttpRequest();
-      xhr.open("GET", "/setrgb?r=" + r + "&g=" + g + "&b=" + b, true);
-      xhr.send();
-    }
-  </script>
-
+  <form action="/setrgb" method="get" target="_self">
+    <p>R: <input type="range" name="r" min="0" max="255" value="0" class="slider"></p>
+    <p>G: <input type="range" name="g" min="0" max="255" value="0" class="slider"></p>
+    <p>B: <input type="range" name="b" min="0" max="255" value="0" class="slider"></p>
+    <p><input type="submit" value="Set RGB" class="button"></p>
+  </form>
 </body>
 </html>
 )rawliteral";
