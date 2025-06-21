@@ -11,8 +11,30 @@
 #include "app_wifi.hpp"
 #include "app_main.hpp"
 #include <WiFi.h>
+#include <Adafruit_NeoPixel.h>
 
+extern const char HTML_PAGE[];
+extern Adafruit_NeoPixel g_neopixel;
 WiFiServer server(HTTP_PORT);
+// bool g_rgb_override_flg = false;
+uint32_t g_current_color = 0;
+
+int getParamValue(String request, const String &key)
+{
+    int idx = request.indexOf(key + "=");
+    int start = idx + key.length() + 1;
+    int end = request.indexOf('&', start);
+
+    if (idx == -1) {
+        return 0;
+    }
+
+    if (end == -1) {
+        end = request.length();
+    }
+
+    return request.substring(start, end).toInt();
+}
 
 /**
  * @brief WiFiアプリ初期化
@@ -30,45 +52,63 @@ void app_wifi_init(void)
 void app_wifi_main(void)
 {
     WiFiClient client = server.available();
+    String currentLine = "";
+    String header = "";
 
-    if (client) {
+    if (!client) {
+        return;
+    } else {
         Serial.println("New Client connected");
         String currentLine = "";
         while (client.connected())
         {
             if (client.available()) {
                 char c = client.read();
-                Serial.write(c);
+                header += c;
                 if (c == '\n') {
                     if (currentLine.length() == 0) {
+                        // LEDの制御
+                        if (header.indexOf("GET /on") >= 0) {
+                            digitalWrite(LED_PIN, HIGH);
+                        } else if (header.indexOf("GET /off") >= 0) {
+                            digitalWrite(LED_PIN, LOW);
+
+                        // NeoPixelの制御
+                        } else if (header.indexOf("/color/red") >= 0) {
+                            g_current_color = g_neopixel.Color(255, 0, 0);
+                        } else if (header.indexOf("/color/yellow") >= 0) {
+                            g_current_color = g_neopixel.Color(255, 255, 0);
+                        } else if (header.indexOf("/color/orange") >= 0) {
+                            g_current_color = g_neopixel.Color(255, 165, 0);
+                        } else if (header.indexOf("/color/yellowgreen") >= 0) {
+                            g_current_color = g_neopixel.Color(173, 255, 47);
+                        } else if (header.indexOf("/color/green") >= 0) {
+                            g_current_color = g_neopixel.Color(0, 255, 0);
+                        } else if (header.indexOf("/color/blue") >= 0) {
+                            g_current_color = g_neopixel.Color(0, 0, 255);
+                        } else if (header.indexOf("/color/purple") >= 0) {
+                            g_current_color = g_neopixel.Color(128, 0, 128);
+                        } else if (header.indexOf("/color/white") >= 0) {
+                            g_current_color = g_neopixel.Color(255, 255, 255);
+                        } else if (header.indexOf("GET /setrgb?") >= 0) {
+                            uint8_t r = getParamValue(currentLine, "r");
+                            uint8_t g = getParamValue(currentLine, "g");
+                            uint8_t b = getParamValue(currentLine, "b");
+                            g_current_color = g_neopixel.Color(r, g, b);
+                        }
+                        // NeoPixelに色反映
+                        g_neopixel.setPixelColor(0, g_current_color);
+                        g_neopixel.show();
+
                         // HTTPレスポンスヘッダー
                         client.println("HTTP/1.1 200 OK");
                         client.println("Content-type:text/html");
+                        client.println("Connection: close");
                         client.println();
-                        // HTMLコンテンツ
-                        client.println("<!DOCTYPE html><html>");
-                        client.println("<head><meta name='viewport' content='width=device-width, initial-scale=1'>");
-                        client.println("<title>ESP32 LED Control</title>");
-                        client.println("<style>");
-                        client.println("body { font-family: Arial; text-align: center; margin: 20px; }");
-                        client.println(".button { background-color: #4CAF50; border: none; color: white; padding: 15px 32px;");
-                        client.println("text-align: center; text-decoration: none; display: inline-block; font-size: 16px;");
-                        client.println("margin: 4px 2px; cursor: pointer; border-radius: 4px; }");
-                        client.println("</style></head>");
-                        // ボディ
-                        client.println("<body>");
-                        client.println("<h1>ESP32 LED Control</h1>");
-                        client.println("<p><a href='/on'><button class='button'>ON</button></a></p>");
-                        client.println("<p><a href='/off'><button class='button'>OFF</button></a></p>");
-                        client.println("</body></html>");
+                        // HTML
+                        client.print(HTML_PAGE);
                         break;
                     } else {
-                        // LEDの制御
-                        if (currentLine.indexOf("GET /on") >= 0) {
-                            digitalWrite(LED_PIN, HIGH);
-                        } else if (currentLine.indexOf("GET /off") >= 0) {
-                            digitalWrite(LED_PIN, LOW);
-                        }
                         currentLine = "";
                     }
                 } else if (c != '\r') {
@@ -76,6 +116,7 @@ void app_wifi_main(void)
                 }
             }
         }
+        delay(1);
         client.stop();
         Serial.println("Client disconnected");
     }

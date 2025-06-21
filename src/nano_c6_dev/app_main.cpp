@@ -12,20 +12,20 @@
 #include <Adafruit_NeoPixel.h>
 #include "app_wifi.hpp"
 
-Adafruit_NeoPixel pixels(NUMPIXELS, NEOPIXEL_DATA_PIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel g_neopixel(NUMPIXELS, NEOPIXEL_DATA_PIN, NEO_GRB + NEO_KHZ800);
 
 int g_color_Idx = 0;
 
 // 色配列（赤、黄、橙、黄緑、緑、青、紫、白）
 uint32_t colors[] = {
-    pixels.Color(255, 0, 0),      // 赤
-    pixels.Color(255, 255, 0),    // 黄
-    pixels.Color(255, 165, 0),    // 橙
-    pixels.Color(173, 255, 47),   // 黄緑
-    pixels.Color(0, 255, 0),      // 緑
-    pixels.Color(0, 0, 255),      // 青
-    pixels.Color(128, 0, 128),    // 紫
-    pixels.Color(255, 255, 255)   // 白
+    g_neopixel.Color(255, 0, 0),      // 赤
+    g_neopixel.Color(255, 255, 0),    // 黄
+    g_neopixel.Color(255, 165, 0),    // 橙
+    g_neopixel.Color(173, 255, 47),   // 黄緑
+    g_neopixel.Color(0, 255, 0),      // 緑
+    g_neopixel.Color(0, 0, 255),      // 青
+    g_neopixel.Color(128, 0, 128),    // 紫
+    g_neopixel.Color(255, 255, 255)   // 白
 };
 
 /**
@@ -73,10 +73,10 @@ void app_init(void)
     digitalWrite(NEOPIXEL_PWR_PIN, HIGH);
 
     // NeoPixel初期化
-    pixels.begin();
-    pixels.show();
-    pixels.setPixelColor(0, colors[g_color_Idx]);
-    pixels.show();
+    g_neopixel.begin();
+    g_neopixel.show();
+    g_neopixel.setPixelColor(0, colors[g_color_Idx]);
+    g_neopixel.show();
 
     // WiFi初期化
     app_wifi_init();
@@ -102,8 +102,8 @@ void app_main(void)
         }
 
         // NeoPixelに色をセット
-        pixels.setPixelColor(0, colors[g_color_Idx]);
-        pixels.show();
+        g_neopixel.setPixelColor(0, colors[g_color_Idx]);
+        g_neopixel.show();
 
         // RGB値をシリアルに表示
         uint32_t c = colors[g_color_Idx];
