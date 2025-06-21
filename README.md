@@ -1,7 +1,15 @@
 # M5Statck Nano C6 評価F/W開発
 M5Statck Nano C6の評価F/W 個人開発リポジトリ
 
-## 開発環境
+## 📍実装
+
+- 📶 WiFi AP(アクセスポイント)
+  - SSID:`Nano_C6_Develop_AP`
+  - Password:`nanoc6dev`
+  - 📍HTTPサーバ
+    - ℹ️LEDの制御とデバッグ情報の表示
+
+## 📍開発環境
 
 #### 📍基板
 

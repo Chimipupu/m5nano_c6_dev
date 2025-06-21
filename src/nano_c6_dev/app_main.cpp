@@ -10,6 +10,7 @@
  */
 #include "app_main.hpp"
 #include <Adafruit_NeoPixel.h>
+#include "app_wifi.hpp"
 
 Adafruit_NeoPixel pixels(NUMPIXELS, NEOPIXEL_DATA_PIN, NEO_GRB + NEO_KHZ800);
 
@@ -59,10 +60,10 @@ double pi_gauss_legendre(uint32_t iterations)
  */
 void app_init(void)
 {
+    // シリアル通信初期化
     Serial.begin(115200);
-    pixels.begin();
-    pixels.show();
 
+    // GPIO初期化
     pinMode(BUTTON_PIN, INPUT_PULLUP);
     pinMode(NEOPIXEL_PWR_PIN, OUTPUT);
     pinMode(IR_LED_PIN, OUTPUT);
@@ -71,9 +72,14 @@ void app_init(void)
     digitalWrite(LED_PIN, HIGH);
     digitalWrite(NEOPIXEL_PWR_PIN, HIGH);
 
-    // 初期色セット
+    // NeoPixel初期化
+    pixels.begin();
+    pixels.show();
     pixels.setPixelColor(0, colors[g_color_Idx]);
     pixels.show();
+
+    // WiFi初期化
+    app_wifi_init();
 }
 
 /**
@@ -84,12 +90,14 @@ void app_main(void)
 {
     bool currentButtonState = digitalRead(BUTTON_PIN);
 
-    if (currentButtonState == LOW)
-    {
+    // WiFiメイン
+    app_wifi_main();
+
+    // ボタン処理関連
+    if (currentButtonState == LOW) {
         // 色を次に進める
         g_color_Idx++;
-        if (g_color_Idx >= sizeof(colors) / sizeof(colors[0]))
-        {
+        if (g_color_Idx >= sizeof(colors) / sizeof(colors[0])) {
             g_color_Idx = 0;
         }
 
@@ -116,5 +124,5 @@ void app_main(void)
         Serial.println(pi, 15);
     }
 
-    delay(300);
+    // delay(300);
 }
