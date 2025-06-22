@@ -19,20 +19,30 @@ WiFiServer server(HTTP_PORT);
 // bool g_rgb_override_flg = false;
 uint32_t g_current_color = 0;
 
-static int getParamValue(String request, const String &key);
+static String getParam(String request, const String &key);
 
-static int getParamValue(String request, const String &key)
+static String getParam(String request, const String &key)
 {
     int idx = request.indexOf(key + "=");
-    if (idx == -1)
-        return 0;
+    if (idx == -1) return "";
     int start = idx + key.length() + 1;
     int endAmp = request.indexOf('&', start);
     int endSpc = request.indexOf(' ', start);
-    int end = (endAmp == -1) ? endSpc : (endSpc == -1 ? endAmp : min(endAmp, endSpc));
-    if (end == -1)
+    int end;
+
+    if (endAmp == -1 && endSpc == -1) {
         end = request.length();
-    return request.substring(start, end).toInt();
+    } else if (endAmp == -1) {
+        end = endSpc;
+    } else if (endSpc == -1) {
+        end = endAmp;
+    } else {
+        end = min(endAmp, endSpc);
+    }
+
+    String value = request.substring(start, end);
+    value.replace('+', ' '); // スペース変換
+    return value;
 }
 
 /**
@@ -91,11 +101,23 @@ void app_wifi_main(void)
                         } else if (header.indexOf("/color/white") >= 0) {
                             g_current_color = g_neopixel.Color(255, 255, 255);
                         } else if (header.indexOf("GET /setrgb") >= 0) {
-                            uint8_t r = getParamValue(header, "r");
-                            uint8_t g = getParamValue(header, "g");
-                            uint8_t b = getParamValue(header, "b");
+                            uint8_t r = (uint8_t)getParam(header, "r").toInt();
+                            uint8_t g = (uint8_t)getParam(header, "g").toInt();
+                            uint8_t b = (uint8_t)getParam(header, "b").toInt();
                             g_current_color = g_neopixel.Color(r, g, b);
                             Serial.printf("Set RGB: R=%d G=%d B=%d\n", r, g, b);
+                        }else if (header.indexOf("/debug?") >= 0) {
+                            String dbgMode = getParam(header, "dbg");
+                            String dbgMsg  = getParam(header, "msg");
+
+                            if (dbgMode == "on") {
+                                Serial.println("[DEBUG] ON");
+                            } else if (dbgMode == "off") {
+                                Serial.println("[DEBUG] OFF");
+                            }
+
+                            Serial.print("[DEBUG MSG] ");
+                            Serial.println(dbgMsg);
                         }
                         // NeoPixelに色反映
                         g_neopixel.setPixelColor(0, g_current_color);
@@ -108,6 +130,7 @@ void app_wifi_main(void)
                         client.println();
                         // HTML
                         client.print(HTML_PAGE);
+                        client.println();
                         break;
                     } else {
                         currentLine = "";
