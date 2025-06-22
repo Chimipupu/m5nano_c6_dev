@@ -30,7 +30,7 @@ const char HTML_PAGE[] = R"rawliteral(
 <html>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ESP32 LED & NeoPixel Control</title>
+  <title>ESP32 Develop HTML</title>
   <style>
     body { font-family: Arial; text-align: center; margin: 20px; }
     .button { background-color: #4CAF50; border: none; color: white; padding: 10px 20px;
@@ -39,14 +39,15 @@ const char HTML_PAGE[] = R"rawliteral(
   </style>
 </head>
 <body>
-  <h1>ESP32 LED & NeoPixel</h1>
+  <h1>ESP32 Develop HTML</h1>
 
+  <h2>LED Control</h2>
   <p>
     <a href="/on"><button class="button">ON</button></a>
     <a href="/off"><button class="button">OFF</button></a>
   </p>
 
-  <h2>Color Presets</h2>
+  <h2>NeoPicxel Control</h2>
   <p>
     <a href="/color/red"><button class="button" style="background-color:red">Red</button></a>
     <a href="/color/yellow"><button class="button" style="background-color:yellow;color:black">Yellow</button></a>
@@ -58,7 +59,6 @@ const char HTML_PAGE[] = R"rawliteral(
     <a href="/color/white"><button class="button" style="background-color:white;color:black">White</button></a>
   </p>
 
-  <h2>RGB Custom Color</h2>
   <form action="/setrgb" method="get" target="_self">
     <p>R: <input type="range" name="r" min="0" max="255" value="0" class="slider"></p>
     <p>G: <input type="range" name="g" min="0" max="255" value="0" class="slider"></p>
